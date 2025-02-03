@@ -16,7 +16,7 @@ class Instruction(Object):
 
     NUM_STEPS = 5  # Number of steps in the instruction
 
-    def __init__(self, posX, posY, width):
+    def __init__(self, posX, posY, width, execution_speed = 10):
         """
         Initialize the Square.
 
@@ -34,7 +34,7 @@ class Instruction(Object):
         step_width = self.get_step_width()
         for i in range(self.NUM_STEPS):
             step_posX = posX + i * step_width
-            self.instruction_steps.append(Instruction_step(step_posX, posY, step_width))
+            self.instruction_steps.append(Instruction_step(step_posX, posY, step_width, execution_speed))
 
     def reset(self):
         """

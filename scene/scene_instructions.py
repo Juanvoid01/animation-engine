@@ -15,8 +15,11 @@ class SceneInstructions(Scene):
         EXECUTE2 = auto()
         FINISHED = auto()
 
+    MOVE_SPEED = 60
+    EXECUTION_SPEED = 20
     NUM_INSTRUCTIONS = 5
     INSTRUCTION_WIDTH = 200
+
     def __init__(self):
         super().__init__()
 
@@ -24,11 +27,11 @@ class SceneInstructions(Scene):
 
         self.instructions = []
 
-        self.instructions.append(Instruction(2000,200,self.INSTRUCTION_WIDTH))
-        self.instructions.append(Instruction(2000,300,self.INSTRUCTION_WIDTH))
-        self.instructions.append(Instruction(2000,400,self.INSTRUCTION_WIDTH))
-        self.instructions.append(Instruction(2000,500,self.INSTRUCTION_WIDTH))
-        self.instructions.append(Instruction(2000,600,self.INSTRUCTION_WIDTH))
+        self.instructions.append(Instruction(2000,200,self.INSTRUCTION_WIDTH,self.EXECUTION_SPEED))
+        self.instructions.append(Instruction(2000,300,self.INSTRUCTION_WIDTH,self.EXECUTION_SPEED))
+        self.instructions.append(Instruction(2000,400,self.INSTRUCTION_WIDTH,self.EXECUTION_SPEED))
+        self.instructions.append(Instruction(2000,500,self.INSTRUCTION_WIDTH,self.EXECUTION_SPEED))
+        self.instructions.append(Instruction(2000,600,self.INSTRUCTION_WIDTH,self.EXECUTION_SPEED))
 
     def update(self, tick):
         """Update logic for the instruction."""
@@ -69,14 +72,14 @@ class SceneInstructions(Scene):
         if not hasattr(self, "_instructions_moved"):
             self._instructions_moved = 0
 
-        speed = 30
+        MOVE_SPEED = 30
         # Process the animation of each instruction sequentially
         if self._instructions_moved < self.NUM_INSTRUCTIONS:
             current_instruction = self.instructions[self._instructions_moved]
 
-            if current_instruction.go_to( speed,speed,finalX=200 + 250 * self._instructions_moved, finalY=200):
+            if current_instruction.go_to( MOVE_SPEED,MOVE_SPEED,finalX=200 + 250 * self._instructions_moved, finalY=200):
                 self._instructions_moved += 1
-            #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, speed):
+            #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, MOVE_SPEED):
              #   self._instructions_moved += 1
         else:
             # All instructions have been moved, cleanup
@@ -157,14 +160,14 @@ class SceneInstructions(Scene):
             self._instructions_moved = 0
 
         step_width = self.instructions[0].get_step_width()
-        speed = 30
+        MOVE_SPEED = 30
         # Process the animation of each instruction sequentially
         if self._instructions_moved < self.NUM_INSTRUCTIONS:
             current_instruction = self.instructions[self._instructions_moved]
 
-            if current_instruction.go_to( speed,speed,finalX=200 + step_width * self._instructions_moved, finalY=200 + (step_width+10) * self._instructions_moved):
+            if current_instruction.go_to( MOVE_SPEED,MOVE_SPEED,finalX=200 + step_width * self._instructions_moved, finalY=200 + (step_width+10) * self._instructions_moved):
                 self._instructions_moved += 1
-            #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, speed):
+            #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, MOVE_SPEED):
              #   self._instructions_moved += 1
         else:
             # All instructions have been moved, cleanup
@@ -183,22 +186,28 @@ class SceneInstructions(Scene):
             bool: True if all instructions have completed their animations, False otherwise.
         """
         # Initialize the animation tracking attribute if not already set
-        if not hasattr(self, "_instructions_executed"):
-            self._instructions_executed = 0
+        if not hasattr(self, "_instructions_launched"):
+            self._instructions_launched = 0
 
-        # Get the current instruction
-        current_instruction = self.instructions[self._instructions_executed]
+        if self._instructions_launched < len(self.instructions):
+            # Get the current instruction
+            current_instruction = self.instructions[self._instructions_launched]
 
-        # If the current instruction has executed one step, move to the next
-        if current_instruction.is_executed():
-            self._instructions_executed += 1
-        else:
-            # Start or continue executing the current instruction
-            current_instruction.start_execution()
+            # If the current instruction has executed one step, move to the next
+            if current_instruction.get_step_executing() >= 1:
+                self._instructions_launched += 1
+            else:
+                # Start or continue executing the current instruction
+                current_instruction.start_execution()
 
         # Check if all instructions have been executed
-        if self._instructions_executed >= len(self.instructions):
-            del self._instructions_executed
+        num_instructions_finished = 0
+        for instruction in self.instructions:
+            if  instruction.is_executed():
+                num_instructions_finished += 1
+
+        if num_instructions_finished >= len(self.instructions):
+            del self._instructions_launched
             return True
 
         return False

@@ -15,13 +15,11 @@ class Instruction_step(Object):
         EXECUTED = auto()
         ERROR = auto()
 
-
-    EXECUTING_VELOCITY = 10
     BORDER_COLOR = COLOR_DARK_BLUE
     BORDER_WIDTH = 5
     BORDER_RADIUS = 3
 
-    def __init__(self, posX, posY, width):
+    def __init__(self, posX, posY, width, execution_speed = 10):
         """
         Initialize the Square.
 
@@ -41,6 +39,7 @@ class Instruction_step(Object):
         self.state = self.State.NOT_EXECUTED
         self.executed_percentage = 0
         self.state_executed_animation = 0 
+        self.EXECUTING_SPEED = execution_speed
 
     def reset(self):
         """
@@ -68,7 +67,7 @@ class Instruction_step(Object):
                 self.state = self.State.EXECUTED
                 self.state_executed_animation = 0 
             else:
-                self.executed_percentage += self.EXECUTING_VELOCITY
+                self.executed_percentage += self.EXECUTING_SPEED
         elif self.state == self.State.EXECUTED:
             if self.state_executed_animation == 0:
                 if self.executed_animation() == True:
