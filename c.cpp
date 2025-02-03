@@ -41,7 +41,7 @@ int main()
 
     if(asd)
     {
-        asd = 0;
+        asd = 1123;
     }
     else if(!asd)
     {

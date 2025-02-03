@@ -1,66 +1,72 @@
-# main.py
-
 import pygame
 import sys
-from scene.scene_code import SceneCode
 from scene.scene_instructions import SceneInstructions
 from utils.colors import *
+from videoRenderer import VideoRenderer
+import numpy as np
+
+# Pygame settings
+WIDTH, HEIGHT = 1920, 1080
+FRAMERATE = 60
+BACKGROUND_COLOR = COLOR_BLACK
 
 # Initialize Pygame
 pygame.init()
-
-# Screen dimensions
-
-WIDTH, HEIGHT = 1920, 1080
-BACKGROUND_COLOR = COLOR_BLACK
-
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Branchless Programming")
-
-# Clock for controlling frame rate
 clock = pygame.time.Clock()
 
-NUM_SCENES = 2
+# Initialize scenes
+scenes = [SceneInstructions()]
 scene_i = 0
-
-# Add objcts
-scenes = []
-
-scene_code = SceneCode()
-scenes.append(scene_code)
-
-scene_instructions = SceneInstructions()
-scenes.append(scene_instructions)
-
-
-# Main game loop
 tick = 0
 running = True
+
+# ✅ Create video renderer for the first scene
+output_file = f"videos/{scenes[scene_i].__class__.__name__}.mp4"
+videoRenderer = VideoRenderer(FRAMERATE, WIDTH, HEIGHT, output_file)
+
 while running:
-    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    if scene_i < NUM_SCENES:
+    if scene_i < len(scenes):
         scenes[scene_i].update(tick)
-
-        if scenes[scene_i].finish():
-            scene_i+=1
 
     # Clear the screen
     screen.fill(BACKGROUND_COLOR)
 
-    if scene_i < NUM_SCENES:
+    if scene_i < len(scenes):
         scenes[scene_i].draw(screen)
 
-    # Update the display
+    # ✅ Check if scene is finished
+    if scenes[scene_i].finish():
+        videoRenderer.close()  # ✅ Ensure FFmpeg finishes the video before switching scenes
+        scene_i += 1  # Move to next scene
+
+        if scene_i < len(scenes):  # ✅ Only create a new renderer if scenes remain
+            output_file = f"videos/{scenes[scene_i].__class__.__name__}.mp4"
+            videoRenderer = VideoRenderer(FRAMERATE, WIDTH, HEIGHT, output_file)
+        else:
+            running = False  # No more scenes, exit loop
+
+    # Update display
     pygame.display.flip()
 
-    tick+=1
-    # Cap the frame rate
-    clock.tick(60)
+    # ✅ Fix: Ensure frame format is correct before sending to FFmpeg
+    frame = pygame.surfarray.pixels3d(screen)  # (width, height, 3)
+    frame = np.swapaxes(frame, 0, 1)  # Convert to (height, width, 3)
+    frame_bytes = frame.tobytes()
 
-# Quit Pygame
+    # Send frame to FFmpeg
+    videoRenderer.send_frame(frame_bytes)
+
+    tick += 1
+    clock.tick(FRAMERATE)  # Maintain FPS
+
+# Cleanup
+videoRenderer.close()  # Ensure last video is properly saved
+
 pygame.quit()
 sys.exit()
