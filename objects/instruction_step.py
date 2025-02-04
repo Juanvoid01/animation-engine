@@ -92,7 +92,7 @@ class Instruction_step(Object):
                 self.state_colors.get(self.State.NOT_EXECUTED, COLOR_GRAY),
                 (self.posX, self.posY, self.sizeX, self.sizeY)
             )
-        if self.state == self.State.EXECUTED:
+        elif self.state == self.State.EXECUTED:
 
             pygame.draw.rect(
                 screen,
