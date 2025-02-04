@@ -92,6 +92,7 @@ class Object(ABC):
 
 
     def go_to(self, deltaX, deltaY, finalX, finalY):
+
         """
         Move the object incrementally by deltaX and deltaY towards a final position.
         Stops moving once the object reaches or exceeds the target coordinates.
@@ -106,8 +107,8 @@ class Object(ABC):
             bool: True if the object has reached the target position, False otherwise.
         """
         # Ensure deltaX and deltaY are positive
-        deltaX = abs(deltaX)
-        deltaY = abs(deltaY)
+        deltaX = deltaX + abs(finalX-self.posX)/64
+        deltaY = deltaY + abs(finalY-self.posY)/64
 
         # Update X position
         if self.posX < finalX:
@@ -132,7 +133,7 @@ class Object(ABC):
         Args:
             finalX (float): The target x-coordinate to stop at.
             finalY (float): The target y-coordinate to stop at.
-            speed (float): The maximum speed factor to control overall movement speed.
+            speed (float): The base speed factor controlling movement.
 
         Returns:
             bool: True if the object has reached the target position, False otherwise.
@@ -151,26 +152,28 @@ class Object(ABC):
         distanceX = abs(finalX - self.posX)
         distanceY = abs(finalY - self.posY)
 
-        # Progress is the fraction of distance traveled (from 0 to 1)
+        # Progress (0 to 1), ensuring no division by zero
         progressX = 1 - (distanceX / total_distanceX) if total_distanceX != 0 else 1
         progressY = 1 - (distanceY / total_distanceY) if total_distanceY != 0 else 1
 
-        # Easing factor using sinusoidal ease-in-out
-        easingX = math.sin(progressX * math.pi / 2)**2
-        easingY = math.sin(progressY * math.pi / 2)**2
+        # Easing function: cubic ease-in-out
+        def cubic_ease_in_out(t):
+            return 3 * t**2 - 2 * t**3  # Smooth acceleration and deceleration
 
-        # Calculate the step size dynamically based on easing
-        stepX = speed * easingX * (finalX - self.posX) / (distanceX + 1e-5)  # Avoid division by zero
-        stepY = speed * easingY * (finalY - self.posY) / (distanceY + 1e-5)  # Avoid division by zero
+        easingX = cubic_ease_in_out(progressX)
+        easingY = cubic_ease_in_out(progressY)
 
-        # Update positions
+        # Dynamically adjust movement speed
+        stepX = (finalX - self.posX) * easingX * speed / (distanceX + 1e-5)
+        stepY = (finalY - self.posY) * easingY * speed / (distanceY + 1e-5)
+
+        # Update position
         self.posX += stepX
         self.posY += stepY
 
-        # Check if the object has reached the target position
-        at_target = abs(self.posX - finalX) < 1e-2 and abs(self.posY - finalY) < 1e-2
+        # Check if we are close enough to stop
+        at_target = abs(self.posX - finalX) < 0.1 and abs(self.posY - finalY) < 0.1
 
-        # Cleanup and return True if the target is reached
         if at_target:
             self.posX = finalX
             self.posY = finalY

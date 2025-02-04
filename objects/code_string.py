@@ -6,6 +6,10 @@ from utils.colors import *
 class CodeString(Object):
     """Represents a piece of code visually in Pygame."""
 
+    HIGHLIGHT_COLOR = (0, 100, 255, 100)
+    LINE_NUMBER_COLOR = (150, 150, 150)
+    MARGIN_BETWEEN_LINES = 5
+
     def __init__(self, posX, posY, width, font_path="fonts/consola.ttf", font_size=20, code_text=""):
         """
         Initialize the Code object.
@@ -20,8 +24,10 @@ class CodeString(Object):
         """
         super().__init__(posX, posY, width, 100)
         self.font = pygame.font.Font(font_path, font_size)
-        self.line_height = font_size + 5  # Add spacing between lines
+        self.line_height = font_size + 4  # Add spacing between lines
         self.code_text = code_text
+        self.highlighted_line = None
+        self.LINE_NUMBER_WIDTH = self.font.size("000")[0] + 10  # Adjust based on digits
 
         # Syntax colors
         self.syntax_colors = {
@@ -64,23 +70,36 @@ class CodeString(Object):
         """Update logic for the code (e.g., animations if needed)."""
         pass
 
+    def draw_highlighted_line(self, screen, line, lineX, lineY):
+        line_width = len(line) * self.font.size(line[0])[0]
+        highlight_surface = pygame.Surface((line_width, self.line_height))
+        highlight_surface.set_alpha(self.HIGHLIGHT_COLOR[3])  # Set transparency
+        highlight_surface.fill(self.HIGHLIGHT_COLOR[:3])  # Fill with RGB color
+        screen.blit(highlight_surface, (lineX, lineY))
+
     def draw(self, screen):
-        """Draw the code block on the screen."""
-        # Tokenize the entire code text
+        """Draw the code block on the screen with syntax highlighting and line selection."""
         lines = self.code_text.split("\n")
         y_offset = self.posY
+        
+        for index, line in enumerate(lines):
 
-        for line in lines:
+            # Draw line number
+            line_number_text = self.font.render(str(index), True, (self.LINE_NUMBER_COLOR if self.highlighted_line != index else COLOR_WHITE) )
+            screen.blit(line_number_text, (self.posX - self.LINE_NUMBER_WIDTH, y_offset))
+
             x_offset = self.posX
-            tokens = self.tokenize_line(line)
 
+            if self.highlighted_line == index:
+                self.draw_highlighted_line(screen=screen, line=line, lineX=self.posX, lineY=y_offset)
+
+            tokens = self.tokenize_line(line)
             for token, color in tokens:
-                # Render each token with its corresponding color
                 rendered_text = self.font.render(token, True, color)
                 screen.blit(rendered_text, (x_offset, y_offset))
-                x_offset += rendered_text.get_width()  # Move to the next token's position
-
-            y_offset += self.line_height  # Move to the next line
+                x_offset += rendered_text.get_width()
+            
+            y_offset += self.line_height + self.MARGIN_BETWEEN_LINES
 
     def tokenize_line(self, line):
 
@@ -120,3 +139,7 @@ class CodeString(Object):
     def change_code(self, new_code_text):
         """Update the displayed code dynamically."""
         self.code_text = new_code_text
+
+    def highlight_line(self, line_index):
+        """Set the selected line index for highlighting."""
+        self.highlighted_line = line_index

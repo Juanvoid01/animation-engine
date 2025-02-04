@@ -1,6 +1,7 @@
 import pygame
 import sys
 from scene.scene_instructions import SceneInstructions
+from scene.scene_code import SceneCode
 from utils.colors import *
 from videoRenderer import VideoRenderer
 import numpy as np
@@ -19,9 +20,10 @@ pygame.display.set_caption("Branchless Programming")
 clock = pygame.time.Clock()
 
 # Initialize scenes
-scenes = [SceneInstructions()]
+scenes = [SceneCode(),SceneInstructions()]
 scene_i = 0
 tick = 0
+
 running = True
 
 # Create video renderer for the first scene

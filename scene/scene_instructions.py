@@ -15,7 +15,7 @@ class SceneInstructions(Scene):
         EXECUTE2 = auto()
         FINISHED = auto()
 
-    MOVE_SPEED = 60
+    MOVE_SPEED = 30
     EXECUTION_SPEED = 20
     NUM_INSTRUCTIONS = 5
     INSTRUCTION_WIDTH = 200
@@ -72,12 +72,11 @@ class SceneInstructions(Scene):
         if not hasattr(self, "_instructions_moved"):
             self._instructions_moved = 0
 
-        MOVE_SPEED = 30
         # Process the animation of each instruction sequentially
         if self._instructions_moved < self.NUM_INSTRUCTIONS:
             current_instruction = self.instructions[self._instructions_moved]
 
-            if current_instruction.go_to( MOVE_SPEED,MOVE_SPEED,finalX=200 + 250 * self._instructions_moved, finalY=200):
+            if current_instruction.go_to( self.MOVE_SPEED,self.MOVE_SPEED,finalX=200 + 250 * self._instructions_moved, finalY=200):
                 self._instructions_moved += 1
             #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, MOVE_SPEED):
              #   self._instructions_moved += 1
@@ -160,12 +159,11 @@ class SceneInstructions(Scene):
             self._instructions_moved = 0
 
         step_width = self.instructions[0].get_step_width()
-        MOVE_SPEED = 30
         # Process the animation of each instruction sequentially
         if self._instructions_moved < self.NUM_INSTRUCTIONS:
             current_instruction = self.instructions[self._instructions_moved]
 
-            if current_instruction.go_to( MOVE_SPEED,MOVE_SPEED,finalX=200 + step_width * self._instructions_moved, finalY=200 + (step_width+10) * self._instructions_moved):
+            if current_instruction.go_to( self.MOVE_SPEED,self.MOVE_SPEED,finalX=200 + step_width * self._instructions_moved, finalY=200 + (step_width+10) * self._instructions_moved):
                 self._instructions_moved += 1
             #if current_instruction.go_to_smooth( finalX=200 + 250 * self._instructions_moved, finalY=200, MOVE_SPEED):
              #   self._instructions_moved += 1
