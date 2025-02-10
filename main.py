@@ -6,7 +6,7 @@ from utils.colors import *
 from videoRenderer import VideoRenderer
 import numpy as np
 
-RECORD_VIDEO = False
+RECORD_VIDEO = True
 
 # Pygame settings
 WIDTH, HEIGHT = 1920, 1080
